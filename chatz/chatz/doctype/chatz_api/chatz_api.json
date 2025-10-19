@@ -1,0 +1,194 @@
+{
+  "actions": [],
+  "allow_copy": 0,
+  "allow_events_in_timeline": 0,
+  "allow_import": 1,
+  "allow_on_submit": 0,
+  "allow_rename": 1,
+  "autoname": "field:api_name",
+  "beta": 0,
+  "creation": "2025-10-16 00:00:00.000000",
+  "custom": 0,
+  "docstatus": 0,
+  "doctype": "DocType",
+  "document_type": "Document",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "api_name",
+      "fieldtype": "Data",
+      "label": "API Name",
+      "reqd": 1,
+      "unique": 1
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Text",
+      "label": "Description"
+    },
+    {
+      "fieldname": "section_api_config",
+      "fieldtype": "Section Break",
+      "label": "API Configuration"
+    },
+    {
+      "fieldname": "api_endpoint",
+      "fieldtype": "Data",
+      "label": "API Endpoint",
+      "placeholder": "https://api.openai.com/v1",
+      "reqd": 1
+    },
+    {
+      "fieldname": "api_key",
+      "fieldtype": "Data",
+      "label": "API Key",
+      "reqd": 1
+    },
+    {
+      "fieldname": "fetch_models_button",
+      "fieldtype": "Button",
+      "label": "Fetch Models"
+    },
+    {
+      "fieldname": "column_break_models",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "available_models",
+      "fieldtype": "JSON",
+      "label": "Available Models",
+      "read_only": 1
+    },
+    {
+      "fieldname": "model_name",
+      "fieldtype": "Data",
+      "label": "Default Model",
+      "reqd": 1
+    },
+    {
+      "fieldname": "section_system",
+      "fieldtype": "Section Break",
+      "label": "System Configuration"
+    },
+    {
+      "fieldname": "system_prompt",
+      "fieldtype": "Text Editor",
+      "label": "System Prompt",
+      "help": "Instructions to guide the AI behavior"
+    },
+    {
+      "fieldname": "section_settings",
+      "fieldtype": "Section Break",
+      "label": "Settings"
+    },
+    {
+      "fieldname": "is_guest_default",
+      "fieldtype": "Check",
+      "label": "Use for Guest Users",
+      "help": "If checked, this configuration will be used for guest users"
+    },
+    {
+      "fieldname": "include_csrf_token",
+      "fieldtype": "Check",
+      "label": "Include CSRF Token",
+      "help": "If checked, the Frappe CSRF token will be included in API requests",
+      "default": 0
+    },
+    {
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Enabled",
+      "default": 1
+    },
+    {
+      "fieldname": "section_widget",
+      "fieldtype": "Section Break",
+      "label": "Widget Customization"
+    },
+    {
+      "fieldname": "widget_title",
+      "fieldtype": "Data",
+      "label": "Widget Title",
+      "default": "Chatz"
+    },
+    {
+      "fieldname": "widget_icon",
+      "fieldtype": "Icon",
+      "label": "Widget Icon",
+      "default": "comment"
+    },
+    {
+      "fieldname": "column_break_colors",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "primary_color",
+      "fieldtype": "Color",
+      "label": "Primary Color",
+      "default": "#667eea",
+      "help": "Color for user messages, header, and send button"
+    },
+    {
+      "fieldname": "secondary_color",
+      "fieldtype": "Color",
+      "label": "Secondary Color",
+      "default": "#764ba2",
+      "help": "Color for floating button gradient"
+    },
+    {
+      "fieldname": "section_greeting",
+      "fieldtype": "Section Break",
+      "label": "Greeting Message"
+    },
+    {
+      "fieldname": "greeting_message",
+      "fieldtype": "Small Text",
+      "label": "Greeting Message",
+      "default": "Hello! How can I help you today?",
+      "help": "This message will appear when a user starts a new chat"
+    }
+  ],
+  "idx": 1,
+  "image_field": "",
+  "is_submittable": 0,
+  "issingle": 0,
+  "istable": 0,
+  "max_attachments": 0,
+  "modified": "2025-10-16 00:00:00.000000",
+  "modified_by": "Administrator",
+  "module": "Chatz",
+  "name": "Chatz API",
+  "owner": "Administrator",
+  "permissions": [
+    {
+      "amend": 0,
+      "cancel": 0,
+      "create": 1,
+      "delete": 1,
+      "email": 1,
+      "export": 1,
+      "if_owner": 0,
+      "import": 1,
+      "permlevel": 0,
+      "print": 1,
+      "read": 1,
+      "report": 1,
+      "role": "System Manager",
+      "share": 1,
+      "submit": 0,
+      "write": 1
+    }
+  ],
+  "quick_entry": 1,
+  "read_only": 0,
+  "read_only_onload": 0,
+  "show_name_in_global_search": 1,
+  "sort_field": "modified",
+  "sort_order": "Desc",
+  "states": [],
+  "track_changes": 1,
+  "track_seen": 1,
+  "track_views": 0
+}
+

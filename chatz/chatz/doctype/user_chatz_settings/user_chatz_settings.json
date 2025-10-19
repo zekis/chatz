@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "autoname": "format:CHATZ-SETTINGS-{#####}",
+ "creation": "2025-10-16 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "section_chatz",
+  "chatz_enabled",
+  "chatz_api_config",
+  "chatz_model_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_chatz",
+   "fieldtype": "Section Break",
+   "label": "Chatz Settings"
+  },
+  {
+   "default": "1",
+   "fieldname": "chatz_enabled",
+   "fieldtype": "Check",
+   "label": "Enable Chatz"
+  },
+  {
+   "fieldname": "chatz_api_config",
+   "fieldtype": "Link",
+   "label": "API Configuration",
+   "options": "Chatz API"
+  },
+  {
+   "fieldname": "chatz_model_name",
+   "fieldtype": "Data",
+   "label": "Model Name Override"
+  }
+ ],
+ "idx": 1,
+ "links": [],
+ "modified": "2025-10-17 09:42:51.376127",
+ "modified_by": "Administrator",
+ "module": "Chatz",
+ "name": "User Chatz Settings",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}
