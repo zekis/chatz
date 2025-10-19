@@ -22,11 +22,6 @@ class ChatzHistory(Document):
 		if not self.message_content:
 			frappe.throw("Message Content is required")
 
-	def before_save(self):
-		"""Ensure user can only save their own messages"""
-		if self.user != frappe.session.user and not frappe.session.user == "Administrator":
-			frappe.throw("You can only save messages for your own user")
-
 
 @frappe.whitelist(allow_guest=True)
 def save_message(user, conversation_id, message_type, message_content,
