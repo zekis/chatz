@@ -89,6 +89,13 @@
       "help": "If checked, this configuration will be used for guest users"
     },
     {
+      "fieldname": "allow_for_all",
+      "fieldtype": "Check",
+      "label": "Allow for All Logged-in Users",
+      "help": "If checked, all logged-in users can access this assistant (even without User Chatz Settings)",
+      "default": 0
+    },
+    {
       "fieldname": "include_csrf_token",
       "fieldtype": "Check",
       "label": "Include CSRF Token",

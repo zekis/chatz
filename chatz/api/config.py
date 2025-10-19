@@ -18,21 +18,21 @@ def get_user_config():
 		if user == "Guest":
 			return get_guest_config()
 
-		# Get user's Chatz settings from User Chatz Settings doctype
-		# Query by user field since document name is auto-generated
+		# First, check for user-specific settings
 		user_settings_list = frappe.get_all(
 			"User Chatz Settings",
-			filters={"user": user},
+			filters={"assignment_type": "User", "user": user},
 			fields=["name", "chatz_enabled", "chatz_api_config", "chatz_model_name"],
 			limit=1
 		)
 
+		# If no user-specific settings, check for role-based settings
 		if not user_settings_list:
-			# No settings configured for this user - don't show widget
-			return {
-				"status": "error",
-				"message": "No Chatz settings configured for this user"
-			}
+			user_settings_list = get_role_based_settings(user)
+
+		if not user_settings_list:
+			# No user or role settings - check for APIs that allow all logged-in users
+			return get_default_logged_in_config(user)
 
 		# Get the first settings document
 		user_settings_data = user_settings_list[0]
@@ -101,6 +101,47 @@ def get_user_config():
 		return get_guest_config()
 
 
+def get_role_based_settings(user):
+	"""
+	Get role-based Chatz settings for a user
+	Checks all roles the user has and returns settings for the first matching role
+
+	Args:
+		user (str): Username
+
+	Returns:
+		list: List of settings dictionaries (empty if no role-based settings found)
+	"""
+	try:
+		# Get all roles for the user
+		user_roles = frappe.get_roles(user)
+
+		if not user_roles:
+			return []
+
+		# Find settings for any of the user's roles
+		role_settings = frappe.get_all(
+			"User Chatz Settings",
+			filters={
+				"assignment_type": "Role",
+				"role": ["in", user_roles],
+				"chatz_enabled": 1
+			},
+			fields=["name", "chatz_enabled", "chatz_api_config", "chatz_model_name", "role"],
+			order_by="creation asc",
+			limit=1
+		)
+
+		return role_settings
+
+	except Exception as e:
+		frappe.log_error(
+			"Error Getting Role-based Settings",
+			f"Failed to get role-based settings for user {user}: {str(e)}"
+		)
+		return []
+
+
 @frappe.whitelist()
 def get_guest_config():
 	"""
@@ -160,6 +201,69 @@ def get_guest_config():
 		}
 
 
+def get_default_logged_in_config(user):
+	"""
+	Get the default configuration for logged-in users without User Chatz Settings
+	Returns the first API marked with allow_for_all
+
+	Args:
+		user (str): Username
+
+	Returns:
+		dict: API configuration
+	"""
+	try:
+		# Find APIs marked as allow_for_all
+		default_config = frappe.db.get_value(
+			"Chatz API",
+			{"allow_for_all": 1, "enabled": 1},
+			["name", "api_endpoint", "api_key", "model_name", "available_models", "system_prompt", "include_csrf_token", "widget_title", "widget_icon", "primary_color", "secondary_color", "greeting_message"],
+			as_dict=True,
+			order_by="widget_title asc"
+		)
+
+		if not default_config:
+			return {
+				"status": "error",
+				"message": "No default configuration available for logged-in users"
+			}
+
+		# Parse available models
+		available_models = []
+		if default_config.available_models:
+			try:
+				available_models = json.loads(default_config.available_models)
+			except json.JSONDecodeError:
+				pass
+
+		return {
+			"status": "success",
+			"api_endpoint": default_config.api_endpoint,
+			"api_key": default_config.api_key,
+			"model_name": default_config.model_name,
+			"available_models": available_models,
+			"system_prompt": default_config.system_prompt or "",
+			"api_config_name": default_config.name,
+			"include_csrf_token": default_config.include_csrf_token,
+			"user": user,
+			"widget_title": default_config.widget_title or "Chatz",
+			"widget_icon": default_config.widget_icon or "comment",
+			"primary_color": default_config.primary_color or "#667eea",
+			"secondary_color": default_config.secondary_color or "#764ba2",
+			"greeting_message": default_config.greeting_message or "Hello! How can I help you today?"
+		}
+
+	except Exception as e:
+		frappe.log_error(
+			"Error Getting Default Logged-in Config",
+			f"Failed to get default logged-in config: {str(e)}"
+		)
+		return {
+			"status": "error",
+			"message": f"Failed to get configuration: {str(e)}"
+		}
+
+
 @frappe.whitelist(allow_guest=True)
 def get_available_apis():
 	"""
@@ -193,41 +297,81 @@ def get_available_apis():
 					"default_api": None
 				}
 
-		# Get all user's Chatz Settings
+		# Get user-specific Chatz Settings
 		user_settings_list = frappe.get_all(
 			"User Chatz Settings",
-			filters={"user": user, "chatz_enabled": 1},
+			filters={"assignment_type": "User", "user": user, "chatz_enabled": 1},
 			fields=["chatz_api_config"],
 			order_by="creation asc"
 		)
 
-		if not user_settings_list:
+		# Also get role-based settings
+		user_roles = frappe.get_roles(user)
+		role_settings_list = []
+		if user_roles:
+			role_settings_list = frappe.get_all(
+				"User Chatz Settings",
+				filters={"assignment_type": "Role", "role": ["in", user_roles], "chatz_enabled": 1},
+				fields=["chatz_api_config"],
+				order_by="creation asc"
+			)
+
+		# Combine user and role settings
+		all_settings = user_settings_list + role_settings_list
+
+		if not all_settings:
+			# No user or role settings - return APIs marked as allow_for_all
+			apis = frappe.get_all(
+				"Chatz API",
+				filters={"allow_for_all": 1, "enabled": 1},
+				fields=["name", "widget_title", "widget_icon", "primary_color"],
+				order_by="widget_title asc"
+			)
+
+			# First API is the default
+			default_api = apis[0].name if apis else None
+
+			return {
+				"status": "success",
+				"apis": apis,
+				"default_api": default_api
+			}
+
+		# Get unique API configs from user and role settings
+		user_api_names = list(set([s.chatz_api_config for s in all_settings if s.chatz_api_config]))
+
+		# Also get APIs marked as allow_for_all
+		allow_for_all_apis = frappe.get_all(
+			"Chatz API",
+			filters={"allow_for_all": 1, "enabled": 1},
+			fields=["name"],
+			pluck="name"
+		)
+
+		# Combine user's APIs and allow_for_all APIs (removing duplicates)
+		all_api_names = list(set(user_api_names + allow_for_all_apis))
+
+		if not all_api_names:
 			return {
 				"status": "success",
 				"apis": [],
 				"default_api": None
 			}
 
-		# Get unique API configs from user settings
-		api_names = list(set([s.chatz_api_config for s in user_settings_list if s.chatz_api_config]))
-
-		if not api_names:
-			return {
-				"status": "success",
-				"apis": [],
-				"default_api": None
-			}
-
-		# Get API details for configured APIs
+		# Get API details for all APIs
 		apis = frappe.get_all(
 			"Chatz API",
-			filters={"name": ["in", api_names], "enabled": 1},
+			filters={"name": ["in", all_api_names], "enabled": 1},
 			fields=["name", "widget_title", "widget_icon", "primary_color"],
 			order_by="widget_title asc"
 		)
 
-		# First API in user's settings is the default
-		default_api = user_settings_list[0].chatz_api_config if user_settings_list else None
+		# Determine default API: prioritize user-specific settings, then role-based
+		default_api = None
+		if user_settings_list:
+			default_api = user_settings_list[0].chatz_api_config
+		elif role_settings_list:
+			default_api = role_settings_list[0].chatz_api_config
 
 		return {
 			"status": "success",
