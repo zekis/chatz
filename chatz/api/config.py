@@ -461,7 +461,7 @@ def get_api_config(api_name):
 		}
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def validate_user_chatz_enabled():
 	"""
 	Check if chat is enabled for the current user

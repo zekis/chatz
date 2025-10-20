@@ -109,6 +109,19 @@ const ChatzWidget = {
 			</button>`;
 		}
 
+		// Build dropdown for mobile
+		let dropdownHTML = `
+			<select class="chatz-tab-dropdown" id="chatz-tab-dropdown">
+				<option value="chat">Chat</option>`;
+
+		if (!isGuest) {
+			dropdownHTML += `
+				<option value="assistants">Assistants</option>
+				<option value="history">History</option>`;
+		}
+
+		dropdownHTML += `</select>`;
+
 		const widgetHTML = `
 			<div id="chatz-widget" class="chatz-widget">
 				<div class="chatz-toggle-btn" id="chatz-toggle">
@@ -116,6 +129,7 @@ const ChatzWidget = {
 				</div>
 				<div class="chatz-container" id="chatz-container" style="display: none;">
 					<div class="chatz-header">
+						${dropdownHTML}
 						<div class="chatz-tabs">
 							${tabsHTML}
 						</div>
@@ -271,6 +285,7 @@ const ChatzWidget = {
 		const tabChat = document.getElementById("chatz-tab-chat");
 		const tabAssistants = document.getElementById("chatz-tab-assistants");
 		const tabHistory = document.getElementById("chatz-tab-history");
+		const tabDropdown = document.getElementById("chatz-tab-dropdown");
 
 		toggleBtn.addEventListener("click", () => this.toggleWidget());
 		closeBtn.addEventListener("click", () => this.toggleWidget());
@@ -278,8 +293,10 @@ const ChatzWidget = {
 		refreshBtn.addEventListener("click", () => this.startNewChat());
 		maximizeBtn.addEventListener("click", () => this.toggleMaximize());
 
-		// Tab switching
-		tabChat.addEventListener("click", () => this.switchTab("chat"));
+		// Tab switching - horizontal tabs
+		if (tabChat) {
+			tabChat.addEventListener("click", () => this.switchTab("chat"));
+		}
 
 		// Only attach listeners for tabs that exist (not present for guests)
 		if (tabAssistants) {
@@ -287,6 +304,11 @@ const ChatzWidget = {
 		}
 		if (tabHistory) {
 			tabHistory.addEventListener("click", () => this.switchTab("history"));
+		}
+
+		// Tab switching - mobile dropdown
+		if (tabDropdown) {
+			tabDropdown.addEventListener("change", (e) => this.switchTab(e.target.value));
 		}
 
 		// Send on Enter (Shift+Enter for new line)
@@ -306,7 +328,16 @@ const ChatzWidget = {
 		document.querySelectorAll(".chatz-tab").forEach(tab => {
 			tab.classList.remove("chatz-tab-active");
 		});
-		document.getElementById(`chatz-tab-${tabName}`).classList.add("chatz-tab-active");
+		const tabButton = document.getElementById(`chatz-tab-${tabName}`);
+		if (tabButton) {
+			tabButton.classList.add("chatz-tab-active");
+		}
+
+		// Update dropdown
+		const dropdown = document.getElementById("chatz-tab-dropdown");
+		if (dropdown) {
+			dropdown.value = tabName;
+		}
 
 		// Update views
 		document.querySelectorAll(".chatz-view").forEach(view => {
@@ -923,6 +954,15 @@ const ChatzWidget = {
 	 * Load conversation history list (show all conversations)
 	 */
 	loadConversationHistory: function() {
+		// Guest users don't have database history
+		if (this.isGuest) {
+			const historyList = document.getElementById("chatz-history-list");
+			if (historyList) {
+				historyList.innerHTML = "<p class='chatz-no-history'>History not available for guest users</p>";
+			}
+			return;
+		}
+
 		// Don't filter - show all conversations
 		ChatzHistoryManager.listConversations(20, null, (result) => {
 			const historyList = document.getElementById("chatz-history-list");
