@@ -14,6 +14,15 @@ const ChatzHistoryManager = {
 	 * @param {Function} callback - Callback function
 	 */
 	saveMessage: function(conversationId, messageType, messageContent, context, apiUsed, callback) {
+		// Validate that we have a valid user session
+		if (!frappe.session || !frappe.session.user || frappe.session.user === "None") {
+			console.error("Chatz: Cannot save message - no valid user session");
+			if (callback) {
+				callback({ status: "error", message: "No valid user session" });
+			}
+			return;
+		}
+
 		frappe.call({
 			method: "chatz.chatz.doctype.chatz_history.chatz_history.save_message",
 			args: {
@@ -30,6 +39,7 @@ const ChatzHistoryManager = {
 				}
 			},
 			error: function(r) {
+				console.error("Chatz: Error saving message:", r);
 				if (callback) {
 					callback({ status: "error", message: "Failed to save message" });
 				}

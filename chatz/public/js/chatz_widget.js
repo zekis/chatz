@@ -421,7 +421,13 @@ const ChatzWidget = {
 				"user",
 				message,
 				context,
-				this.config.api_config_name
+				this.config.api_config_name,
+				(result) => {
+					if (result && result.status === "error") {
+						console.error("Chatz: Failed to save user message:", result.message);
+						// Don't show error to user for message saving - it's not critical
+					}
+				}
 			);
 		} else {
 			// Guests: save to localStorage
@@ -500,7 +506,13 @@ const ChatzWidget = {
 							"assistant",
 							fullResponse,
 							context,
-							this.config.api_config_name
+							this.config.api_config_name,
+							(result) => {
+								if (result && result.status === "error") {
+									console.error("Chatz: Failed to save assistant message:", result.message);
+									// Don't show error to user for message saving - it's not critical
+								}
+							}
 						);
 					} else {
 						// Guests: save to localStorage

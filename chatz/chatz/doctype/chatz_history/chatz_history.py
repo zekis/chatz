@@ -28,7 +28,7 @@ def save_message(user, conversation_id, message_type, message_content,
 				 document_context=None, api_used=None):
 	"""
 	Save a chat message to history
-	
+
 	Args:
 		user (str): Username
 		conversation_id (str): Unique conversation identifier
@@ -36,43 +36,65 @@ def save_message(user, conversation_id, message_type, message_content,
 		message_content (str): The message text
 		document_context (str): JSON string with document context
 		api_used (str): Name of the Chatz API configuration used
-		
+
 	Returns:
 		dict: Response with status and message ID
 	"""
 	try:
+		# Validate user parameter
+		if not user or user == "None" or user == "null":
+			frappe.log_error(
+				"Invalid User in save_message",
+				f"Received invalid user: {user}, session user: {frappe.session.user}"
+			)
+			return {
+				"status": "error",
+				"message": "Invalid user parameter"
+			}
+
+		# Validate session user
+		if not frappe.session.user or frappe.session.user == "None":
+			frappe.log_error(
+				"Invalid Session in save_message",
+				f"No valid session user, received user parameter: {user}"
+			)
+			return {
+				"status": "error",
+				"message": "No valid user session"
+			}
+
 		# Ensure user is saving their own messages
 		if user != frappe.session.user and frappe.session.user != "Administrator":
 			return {
 				"status": "error",
 				"message": "You can only save messages for your own user"
 			}
-		
+
 		# Create new Chatz History document
 		doc = frappe.new_doc("Chatz History")
 		doc.user = user
 		doc.conversation_id = conversation_id
 		doc.message_type = message_type
 		doc.message_content = message_content
-		
+
 		if document_context:
 			doc.document_context = document_context
-		
+
 		if api_used:
 			doc.api_used = api_used
-		
+
 		doc.insert(ignore_permissions=True)
-		
+
 		return {
 			"status": "success",
 			"message_id": doc.name,
 			"message": "Message saved successfully"
 		}
-		
+
 	except Exception as e:
 		frappe.log_error(
 			"Error Saving Message",
-			f"Failed to save message for user {user}: {str(e)}"
+			f"Failed to save message for user {user}: {str(e)}\nSession user: {frappe.session.user}"
 		)
 		return {
 			"status": "error",
