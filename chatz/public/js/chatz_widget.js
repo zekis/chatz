@@ -723,7 +723,7 @@ const ChatzWidget = {
 				const placeholder = `___THOUGHTS_PLACEHOLDER_${thoughtsIndex}___`;
 				thoughtsPlaceholders.push({
 					placeholder: placeholder,
-					html: `<div class="chatz-thoughts-container"><div class="chatz-thought-badge" onclick="ChatzWidget.toggleThought('${containerId}')"><svg class="chatz-thought-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg><span>Thoughts (${allThoughts.length})</span></div><div class="chatz-thoughts-expanded" id="${containerId}" style="display: none;">${thoughtsList}</div></div>`
+					html: `<div class="chatz-thoughts-container"><div class="chatz-thought-badge" onclick="ChatzWidget.toggleThought('${containerId}')"><svg class="chatz-thought-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg><span>Thoughts (${allThoughts.length})</span></div><div class="chatz-thoughts-expanded" id="${containerId}" style="display: block;">${thoughtsList}</div></div>`
 				});
 				thoughtsIndex++;
 

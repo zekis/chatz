@@ -537,6 +537,7 @@
 	background: transparent;
 	max-height: 120px;
 	min-height: 20px;
+	color: #202124 !important;
 }
 
 #chatz-input::placeholder {
