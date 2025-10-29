@@ -35,14 +35,14 @@ app_include_js = [
 ]
 
 # include js, css files in header of web template
-web_include_css = "/assets/chatz/css/chatz_widget.css"
-web_include_js = [
-	"/assets/chatz/js/chatz_context.js",
-	"/assets/chatz/js/chatz_api_client.js",
-	"/assets/chatz/js/chatz_history_manager.js",
-	"/assets/chatz/js/chatz_widget.js",
-	"/assets/chatz/js/chatz_init.js"
-]
+# web_include_css = "/assets/chatz/css/chatz_widget.css"
+# web_include_js = [
+# 	"/assets/chatz/js/chatz_context.js",
+# 	"/assets/chatz/js/chatz_api_client.js",
+# 	"/assets/chatz/js/chatz_history_manager.js",
+# 	"/assets/chatz/js/chatz_widget.js",
+# 	"/assets/chatz/js/chatz_init.js"
+# ]
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "chatz/public/scss/website"
