@@ -23,7 +23,7 @@ class ChatzHistory(Document):
 			frappe.throw("Message Content is required")
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def save_message(user, conversation_id, message_type, message_content,
 				 document_context=None, api_used=None):
 	"""
@@ -42,13 +42,13 @@ def save_message(user, conversation_id, message_type, message_content,
 	"""
 	try:
 		# Log the incoming parameters for debugging
-		frappe.log_error(
-			"save_message Debug",
-			f"user param: '{user}' (type: {type(user).__name__})\n"
-			f"session.user: '{frappe.session.user}' (type: {type(frappe.session.user).__name__})\n"
-			f"message_type: {message_type}\n"
-			f"Are they equal? {user == frappe.session.user}"
-		)
+		# frappe.log_error(
+		# 	"save_message Debug",
+		# 	f"user param: '{user}' (type: {type(user).__name__})\n"
+		# 	f"session.user: '{frappe.session.user}' (type: {type(frappe.session.user).__name__})\n"
+		# 	f"message_type: {message_type}\n"
+		# 	f"Are they equal? {user == frappe.session.user}"
+		# )
 
 		# Validate user parameter
 		if not user or user == "None" or user == "null":
@@ -115,7 +115,7 @@ def save_message(user, conversation_id, message_type, message_content,
 		}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_conversation_history(conversation_id, limit=50):
 	"""
 	Retrieve messages for a specific conversation
@@ -156,7 +156,7 @@ def get_conversation_history(conversation_id, limit=50):
 		}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def list_conversations(limit=20, api_filter=None):
 	"""
 	Get list of conversations for current user
