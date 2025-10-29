@@ -41,6 +41,15 @@ def save_message(user, conversation_id, message_type, message_content,
 		dict: Response with status and message ID
 	"""
 	try:
+		# Log the incoming parameters for debugging
+		frappe.log_error(
+			"save_message Debug",
+			f"user param: '{user}' (type: {type(user).__name__})\n"
+			f"session.user: '{frappe.session.user}' (type: {type(frappe.session.user).__name__})\n"
+			f"message_type: {message_type}\n"
+			f"Are they equal? {user == frappe.session.user}"
+		)
+
 		# Validate user parameter
 		if not user or user == "None" or user == "null":
 			frappe.log_error(
@@ -65,6 +74,10 @@ def save_message(user, conversation_id, message_type, message_content,
 
 		# Ensure user is saving their own messages
 		if user != frappe.session.user and frappe.session.user != "Administrator":
+			frappe.log_error(
+				"User Mismatch in save_message",
+				f"user param: '{user}', session.user: '{frappe.session.user}'"
+			)
 			return {
 				"status": "error",
 				"message": "You can only save messages for your own user"
