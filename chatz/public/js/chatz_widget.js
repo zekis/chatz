@@ -627,7 +627,14 @@ const ChatzWidget = {
 
 		messageEl.appendChild(wrapper);
 		messagesDiv.appendChild(messageEl);
+
+		// Scroll immediately
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+		// Scroll again after a short delay to account for expanded thoughts rendering
+		setTimeout(() => {
+			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+		}, 100);
 	},
 
 	/**
@@ -686,7 +693,13 @@ const ChatzWidget = {
 			lastMessage.innerHTML = this.renderMarkdown(content) + cursor;
 		}
 
+		// Scroll immediately
 		messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+		// Scroll again after a short delay to account for expanded thoughts rendering
+		setTimeout(() => {
+			messagesDiv.scrollTop = messagesDiv.scrollHeight;
+		}, 100);
 	},
 
 	/**
@@ -706,43 +719,89 @@ const ChatzWidget = {
 		const thoughtsPlaceholders = [];
 		let thoughtsIndex = 0;
 
-		// Extract ALL thoughts lines at once
-		const allThoughts = [];
-		const thoughtLines = content.match(/^\*Thinking:.*$/gm);
+		// Group consecutive *Thinking: lines together (ignoring empty lines between them)
+		const lines = content.split('\n');
+		const processedLines = [];
+		let currentThoughtGroup = [];
+		let pendingEmptyLines = [];
 
-		if (thoughtLines && thoughtLines.length > 0) {
-			// Extract thought content from each line
-			for (let line of thoughtLines) {
-				const thought = line.substring(10).trim(); // Remove "*Thinking:" prefix
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			const thinkingMatch = line.match(/^\*Thinking:(.*)$/);
+
+			if (thinkingMatch) {
+				// This is a thinking line - add to current group
+				const thought = thinkingMatch[1].trim();
 				if (thought) {
-					allThoughts.push(thought);
+					currentThoughtGroup.push(thought);
 				}
-			}
+				// Clear pending empty lines since we're still in a thought group
+				pendingEmptyLines = [];
+			} else if (line.trim() === '') {
+				// Empty line - might be between thoughts or after thoughts
+				// Store it temporarily
+				pendingEmptyLines.push(line);
+			} else {
+				// Non-empty, non-thinking line - this is actual content
+				// Close current thought group if exists
+				if (currentThoughtGroup.length > 0) {
+					// Create placeholder for this thought group
+					const containerId = `thought-${Date.now()}-${thoughtsIndex}`;
+					const placeholder = `___THOUGHTS_PLACEHOLDER_${thoughtsIndex}___`;
 
-			// Remove all *Thinking: lines from content
-			content = content.replace(/^\*Thinking:.*$\n?/gm, '');
+					const thoughtsList = currentThoughtGroup.map(thought =>
+						`<div class="chatz-thought-item">${this.renderMarkdownSimple(thought)}</div>`
+					).join('');
 
-			// Trim again after removing thoughts to eliminate extra newlines
-			content = content.trim();
+					const label = currentThoughtGroup.length === 1 ? 'Thought' : `Thoughts (${currentThoughtGroup.length})`;
 
-			// Create a single collapsible thought container
-			if (allThoughts.length > 0) {
-				const containerId = `thoughts-${Date.now()}`;
-				const thoughtsList = allThoughts.map((thought, index) =>
-					`<div class="chatz-thought-item">${this.renderMarkdownSimple(thought)}</div>`
-				).join('');
+					thoughtsPlaceholders.push({
+						placeholder: placeholder,
+						html: `<div class="chatz-thought-container"><div class="chatz-thought-header" onclick="ChatzWidget.toggleThought('${containerId}')"><svg class="chatz-thought-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg><span>${label}</span></div><div class="chatz-thought-list" id="${containerId}" style="display: block;">${thoughtsList}</div></div>`
+					});
+					thoughtsIndex++;
 
-				const placeholder = `___THOUGHTS_PLACEHOLDER_${thoughtsIndex}___`;
-				thoughtsPlaceholders.push({
-					placeholder: placeholder,
-					html: `<div class="chatz-thoughts-container"><div class="chatz-thought-badge" onclick="ChatzWidget.toggleThought('${containerId}')"><svg class="chatz-thought-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg><span>Thoughts (${allThoughts.length})</span></div><div class="chatz-thoughts-expanded" id="${containerId}" style="display: block;">${thoughtsList}</div></div>`
-				});
-				thoughtsIndex++;
+					processedLines.push(placeholder);
+					currentThoughtGroup = [];
 
-				// Add placeholder directly to content
-				content = placeholder + content;
+					// Clear pending empty lines - thought group provides visual separation
+					pendingEmptyLines = [];
+				} else {
+					// No thought group - add any pending empty lines before the content
+					processedLines.push(...pendingEmptyLines);
+					pendingEmptyLines = [];
+				}
+
+				// Add the content line
+				processedLines.push(line);
 			}
 		}
+
+		// Handle any remaining thoughts at the end
+		if (currentThoughtGroup.length > 0) {
+			const containerId = `thought-${Date.now()}-${thoughtsIndex}`;
+			const placeholder = `___THOUGHTS_PLACEHOLDER_${thoughtsIndex}___`;
+
+			const thoughtsList = currentThoughtGroup.map(thought =>
+				`<div class="chatz-thought-item">${this.renderMarkdownSimple(thought)}</div>`
+			).join('');
+
+			const label = currentThoughtGroup.length === 1 ? 'Thought' : `Thoughts (${currentThoughtGroup.length})`;
+
+			thoughtsPlaceholders.push({
+				placeholder: placeholder,
+				html: `<div class="chatz-thought-container"><div class="chatz-thought-header" onclick="ChatzWidget.toggleThought('${containerId}')"><svg class="chatz-thought-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg><span>${label}</span></div><div class="chatz-thought-list" id="${containerId}" style="display: block;">${thoughtsList}</div></div>`
+			});
+			thoughtsIndex++;
+
+			processedLines.push(placeholder);
+		}
+
+		// Rejoin the processed lines
+		content = processedLines.join('\n');
+
+		// Clean up excessive empty lines (more than 2 consecutive newlines)
+		content = content.replace(/\n{3,}/g, '\n\n');
 
 		// Extract and replace markdown links BEFORE escaping: [text](url)
 		content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
