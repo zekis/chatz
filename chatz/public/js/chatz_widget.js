@@ -10,6 +10,22 @@ const ChatzWidget = {
 	isLoading: false,
 
 	/**
+	 * Scroll chat to bottom with multiple attempts to handle animations
+	 */
+	scrollToBottom: function() {
+		const messagesDiv = document.getElementById("chatz-messages");
+		if (!messagesDiv) return;
+
+		// Scroll immediately
+		messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+		// Scroll multiple times with delays to catch content at different rendering stages
+		setTimeout(() => { messagesDiv.scrollTop = messagesDiv.scrollHeight; }, 50);
+		setTimeout(() => { messagesDiv.scrollTop = messagesDiv.scrollHeight; }, 150);
+		setTimeout(() => { messagesDiv.scrollTop = messagesDiv.scrollHeight; }, 300);
+	},
+
+	/**
 	 * Initialize the widget
 	 * @param {Object} apiConfig - API configuration
 	 */
@@ -47,12 +63,7 @@ const ChatzWidget = {
 				});
 
 				// Scroll to bottom after loading history
-				setTimeout(() => {
-					const messagesDiv = document.getElementById("chatz-messages");
-					if (messagesDiv) {
-						messagesDiv.scrollTop = messagesDiv.scrollHeight;
-					}
-				}, 100);
+				this.scrollToBottom();
 			} else {
 				// No history, show greeting
 				if (this.config.greeting_message) {
@@ -366,12 +377,7 @@ const ChatzWidget = {
 
 		// Scroll to bottom when opening the widget
 		if (this.isOpen) {
-			setTimeout(() => {
-				const messagesDiv = document.getElementById("chatz-messages");
-				if (messagesDiv) {
-					messagesDiv.scrollTop = messagesDiv.scrollHeight;
-				}
-			}, 50);
+			this.scrollToBottom();
 		}
 	},
 
@@ -573,7 +579,7 @@ const ChatzWidget = {
 			</div>
 		`;
 		messagesDiv.appendChild(thinkingEl);
-		messagesDiv.scrollTop = messagesDiv.scrollHeight;
+		this.scrollToBottom();
 	},
 
 	/**
@@ -628,13 +634,8 @@ const ChatzWidget = {
 		messageEl.appendChild(wrapper);
 		messagesDiv.appendChild(messageEl);
 
-		// Scroll immediately
-		messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-		// Scroll again after a short delay to account for expanded thoughts rendering
-		setTimeout(() => {
-			messagesDiv.scrollTop = messagesDiv.scrollHeight;
-		}, 100);
+		// Scroll to bottom with multiple attempts
+		this.scrollToBottom();
 	},
 
 	/**
@@ -693,13 +694,8 @@ const ChatzWidget = {
 			lastMessage.innerHTML = this.renderMarkdown(content) + cursor;
 		}
 
-		// Scroll immediately
-		messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-		// Scroll again after a short delay to account for expanded thoughts rendering
-		setTimeout(() => {
-			messagesDiv.scrollTop = messagesDiv.scrollHeight;
-		}, 100);
+		// Scroll to bottom with multiple attempts
+		this.scrollToBottom();
 	},
 
 	/**
@@ -1105,9 +1101,7 @@ const ChatzWidget = {
 					this.addMessageToDisplay(msg.message_type, msg.message_content, msg.created_at);
 				});
 				// Scroll to bottom after loading
-				setTimeout(() => {
-					messagesDiv.scrollTop = messagesDiv.scrollHeight;
-				}, 100);
+				this.scrollToBottom();
 			}
 		});
 	},
@@ -1146,9 +1140,7 @@ const ChatzWidget = {
 							this.addMessageToDisplay(msg.message_type, msg.message_content, msg.created_at);
 						});
 						// Scroll to bottom after loading
-						setTimeout(() => {
-							messagesDiv.scrollTop = messagesDiv.scrollHeight;
-						}, 100);
+						this.scrollToBottom();
 					}
 				});
 			} else {

@@ -43,7 +43,7 @@
 	position: absolute;
 	bottom: 80px;
 	right: 0;
-	width: 420px;
+	width: 460px;
 	height: 650px;
 	background: #f5f5f5;
 	border-radius: 16px;
@@ -58,7 +58,7 @@
 /* Maximized state */
 .chatz-container.chatz-maximized {
 	height: calc(100vh - 100px);
-	width: 420px;
+	width: 460px;
 	bottom: 20px;
 }
 
@@ -89,6 +89,8 @@
 	gap: 0;
 	flex: 1;
 	padding: 0 16px;
+	min-width: 0; /* Allow tabs to shrink */
+	overflow: hidden; /* Prevent overflow */
 }
 
 .chatz-tab {
@@ -126,6 +128,7 @@
 	align-items: center;
 	gap: 4px;
 	padding: 8px 12px;
+	flex-shrink: 0; /* Prevent actions from being pushed off screen */
 }
 
 .chatz-icon-btn {
